@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ignis", "Ignis\Ignis.csproj", "{3FE5AC64-3DFC-4F63-811E-0CED6D5C25B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ignis", "src\Ignis\Ignis.csproj", "{3FE5AC64-3DFC-4F63-811E-0CED6D5C25B0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{78D163FC-E2D3-4AED-A02C-EFC8898620A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +14,8 @@ Global
 		{3FE5AC64-3DFC-4F63-811E-0CED6D5C25B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FE5AC64-3DFC-4F63-811E-0CED6D5C25B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FE5AC64-3DFC-4F63-811E-0CED6D5C25B0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3FE5AC64-3DFC-4F63-811E-0CED6D5C25B0} = {78D163FC-E2D3-4AED-A02C-EFC8898620A5}
 	EndGlobalSection
 EndGlobal
