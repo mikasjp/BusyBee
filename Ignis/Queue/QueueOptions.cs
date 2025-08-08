@@ -45,5 +45,5 @@ public enum OverflowStrategy
     /// Discard the newest job in the queue if the queue is full.
     /// If the queue is full, the newest job will be discarded to make space for the new job.
     /// </summary>
-    DiscardNewest,
+    DiscardNewest
 }
