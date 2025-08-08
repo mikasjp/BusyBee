@@ -41,7 +41,7 @@ public sealed class IgnisBuilder
         return this;
     }
 
-    public IgnisBuilder WithJobTimeout(TimeSpan timeout)
+    public IgnisBuilder WithGlobalJobTimeout(TimeSpan timeout)
     {
         Services.Configure<ProcessorOptions>(options =>
         {

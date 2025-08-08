@@ -11,17 +11,21 @@ internal class Queue(IOptions<QueueOptions> options) : IBackgroundQueue
     private readonly QueueOptions _options = options.Value ?? throw new ArgumentNullException(nameof(options), "Queue options cannot be null.");
     private readonly Channel<JobWrapper> _channel = CreateChannel(options.Value);
 
-    public async Task<Guid> Enqueue(Func<IServiceProvider, JobContext, CancellationToken, Task> job, CancellationToken cancellationToken)
+    public async Task<Guid> Enqueue(
+        Func<IServiceProvider, JobContext, CancellationToken, Task> job,
+        CancellationToken cancellationToken,
+        TimeSpan? timeout = null)
     {
         ArgumentNullException.ThrowIfNull(job);
 
         var jobId = Guid.NewGuid();
 
         var jobWrapper = new JobWrapper(
-            jobId,
-            DateTimeOffset.UtcNow,
-            Activity.Current?.Context,
-            job);
+            JobId: jobId,
+            Timeout: timeout,
+            QueuedAt: DateTimeOffset.UtcNow,
+            ActivityContext: Activity.Current?.Context,
+            Job: job);
 
         if (_options.OverflowStrategy == OverflowStrategy.ThrowException)
         {

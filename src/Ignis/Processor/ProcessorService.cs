@@ -56,13 +56,18 @@ internal sealed class ProcessorService(
         using var activity = _activitySource
             .StartActivity(activityName, ActivityKind.Internal, jobItem.ActivityContext ?? new ActivityContext());
         activity?.AddTag(nameof(jobItem.JobId), jobItem.JobId);
-        var jobTimeoutCancellationToken = GetJobCancellationToken();
+        var jobTimeoutCancellationToken = GetJobCancellationToken(jobItem.Timeout);
         var combinedCancellationToken = CancellationTokenSource
             .CreateLinkedTokenSource(stoppingToken, jobTimeoutCancellationToken)
             .Token;
+        var stopwatch = Stopwatch.StartNew();
         try
         {
-            var context = new JobContext(jobItem.JobId, jobItem.QueuedAt, DateTimeOffset.UtcNow);
+            logger.LogDebug("Starting job {JobId}", jobItem.JobId);
+            var context = new JobContext(
+                JobId: jobItem.JobId,
+                QueuedAt: jobItem.QueuedAt,
+                StartedAt: DateTimeOffset.UtcNow);
             await jobItem.Job(scope.ServiceProvider, context, combinedCancellationToken);
         }
         catch (TaskCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -81,12 +86,19 @@ internal sealed class ProcessorService(
         {
             logger.LogError(ex, "An error occurred while processing job {JobId}", jobItem.JobId);
         }
+        finally
+        {
+            logger.LogDebug("Job {JobId} finished in {ElapsedMilliseconds} ms",
+                jobItem.JobId,
+                stopwatch.ElapsedMilliseconds);
+        }
     }
 
-    private CancellationToken GetJobCancellationToken()
+    private CancellationToken GetJobCancellationToken(TimeSpan? timeout)
     {
-        return options.Value.JobTimeout is not null
-            ? new CancellationTokenSource(options.Value.JobTimeout.Value).Token
+        var jobTimeout = timeout ?? options.Value.JobTimeout;
+        return jobTimeout is not null
+            ? new CancellationTokenSource(jobTimeout.Value).Token
             : CancellationToken.None;
     }
 
