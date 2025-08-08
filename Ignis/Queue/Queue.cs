@@ -37,11 +37,6 @@ internal class Queue(IOptions<QueueOptions> options) : IBackgroundQueue
         return jobId;
     }
 
-    public async Task<JobWrapper> Dequeue(CancellationToken cancellationToken)
-    {
-        return await _channel.Reader.ReadAsync(cancellationToken);
-    }
-
     public async Task<IEnumerable<JobWrapper>> DequeueBatch(int batchSize, CancellationToken cancellationToken)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(batchSize, nameof(batchSize));
