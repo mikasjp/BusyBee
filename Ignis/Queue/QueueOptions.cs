@@ -10,13 +10,13 @@ public sealed class QueueOptions
     /// If not specified, the queue will have no capacity limit.
     /// If specified, there must be a valid <see cref="OverflowStrategy"/> set.
     /// </summary>
-    [Range(1, int.MaxValue)] public int? Capacity { get; private set; }
+    [Range(1, int.MaxValue)] public int? Capacity { get; set; }
     
     /// <summary>
     /// The strategy to use when the queue is full.
     /// Must be set if Capacity is specified.
     /// </summary>
-    public OverflowStrategy? OverflowStrategy { get; private set; }
+    public OverflowStrategy? OverflowStrategy { get; set; }
 }
 
 public enum OverflowStrategy
