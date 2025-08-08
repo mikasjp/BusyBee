@@ -37,7 +37,7 @@ internal sealed class ProcessorService(
                     tasks.Length,
                     stopwatch.ElapsedMilliseconds);
             }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            catch (TaskCanceledException) when (stoppingToken.IsCancellationRequested)
             {
                 logger.LogDebug("Gracefully stopping job processing as cancellation was requested");
                 break;
@@ -52,22 +52,25 @@ internal sealed class ProcessorService(
     private async Task ProcessJob(JobWrapper jobItem, CancellationToken stoppingToken)
     {
         await using var scope = serviceProvider.CreateAsyncScope();
+        var activityName = BuildActivityName(jobItem.JobId);
         using var activity = _activitySource
-            .StartActivity(ActivityKind.Internal, jobItem.ActivityContext ?? new ActivityContext());
+            .StartActivity(activityName, ActivityKind.Internal, jobItem.ActivityContext ?? new ActivityContext());
+        activity?.AddTag(nameof(jobItem.JobId), jobItem.JobId);
         var jobTimeoutCancellationToken = GetJobCancellationToken();
         var combinedCancellationToken = CancellationTokenSource
             .CreateLinkedTokenSource(stoppingToken, jobTimeoutCancellationToken)
             .Token;
         try
         {
-            await jobItem.Job(scope.ServiceProvider, combinedCancellationToken);
+            var context = new JobContext(jobItem.JobId, jobItem.QueuedAt, DateTimeOffset.UtcNow);
+            await jobItem.Job(scope.ServiceProvider, context, combinedCancellationToken);
         }
-        catch (OperationCanceledException e) when (e.CancellationToken == stoppingToken)
+        catch (TaskCanceledException) when (stoppingToken.IsCancellationRequested)
         {
             logger.LogDebug("Job {JobId} was cancelled due to graceful shutdown", jobItem.JobId);
             throw;
         }
-        catch (OperationCanceledException e) when (e.CancellationToken == jobTimeoutCancellationToken)
+        catch (TaskCanceledException) when (jobTimeoutCancellationToken.IsCancellationRequested)
         {
             logger.Log(
                 options.Value.JobTimeoutLogLevel ?? LogLevel.None,
@@ -85,5 +88,10 @@ internal sealed class ProcessorService(
         return options.Value.JobTimeout is not null
             ? new CancellationTokenSource(options.Value.JobTimeout.Value).Token
             : CancellationToken.None;
+    }
+
+    private static string BuildActivityName(Guid jobId)
+    {
+        return $"IgnisJob-{jobId:D}";
     }
 }

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Ignis.Queue.Exceptions;
 using System.Threading.Channels;
+using Ignis.Processor;
 using Microsoft.Extensions.Options;
 
 namespace Ignis.Queue;
@@ -10,7 +11,7 @@ internal class Queue(IOptions<QueueOptions> options) : IBackgroundQueue
     private readonly QueueOptions _options = options.Value ?? throw new ArgumentNullException(nameof(options), "Queue options cannot be null.");
     private readonly Channel<JobWrapper> _channel = CreateChannel(options.Value);
 
-    public async Task<Guid> Enqueue(Func<IServiceProvider, CancellationToken, Task> job, CancellationToken cancellationToken)
+    public async Task<Guid> Enqueue(Func<IServiceProvider, JobContext, CancellationToken, Task> job, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(job);
 
@@ -18,6 +19,7 @@ internal class Queue(IOptions<QueueOptions> options) : IBackgroundQueue
 
         var jobWrapper = new JobWrapper(
             jobId,
+            DateTimeOffset.UtcNow,
             Activity.Current?.Context,
             job);
 

@@ -1,3 +1,4 @@
+using Ignis.Processor;
 using Ignis.Queue.Exceptions;
 
 namespace Ignis.Queue;
@@ -15,5 +16,5 @@ public interface IBackgroundQueue
     /// The job is a function that takes an <see cref="IServiceProvider"/> and returns a <see cref="Task"/>.
     /// This allows the job to resolve dependencies from the service provider.
     /// </remarks>
-    Task<Guid> Enqueue(Func<IServiceProvider, CancellationToken, Task> job, CancellationToken cancellationToken);
+    Task<Guid> Enqueue(Func<IServiceProvider, JobContext, CancellationToken, Task> job, CancellationToken cancellationToken);
 }
