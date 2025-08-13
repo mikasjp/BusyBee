@@ -66,7 +66,6 @@ builder.Services
     .AddIgnis()
     .WithUnboundedQueue()
     .WithGlobalJobTimeout(TimeSpan.FromSeconds(30))
-    .WithJobTimeoutLogging(LogLevel.Warning)
     .WithLevelOfParallelism(10);
 ```
 
@@ -102,10 +101,6 @@ Supported overflow strategies:
 // Set global timeout for all jobs
 builder.Services.AddIgnis()
     .WithGlobalJobTimeout(TimeSpan.FromSeconds(30));
-
-// Configure timeout logging
-builder.Services.AddIgnis()
-    .WithJobTimeoutLogging(LogLevel.Error);
 ```
 
 ### Performance Tuning
@@ -162,7 +157,6 @@ builder.Services
     .AddIgnis()
     .WithBoundedQueue(capacity: 10000, OverflowStrategy.DropOldest)
     .WithGlobalJobTimeout(TimeSpan.FromMinutes(5))
-    .WithJobTimeoutLogging(LogLevel.Warning)
     .WithLevelOfParallelism(5);
 
 // Register your services
