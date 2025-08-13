@@ -2,6 +2,7 @@ using Ignis.Observability;
 using Ignis.Queue;
 using Ignis.Processor;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Ignis;
 
@@ -20,12 +21,12 @@ public static class IgnisModule
             .AddOptions<ProcessorOptions>()
             .Configure(configureProcessor ?? (_ => { }))
             .ValidateDataAnnotations();
-        services.AddSingleton<Queue.Queue>();
-        services.AddSingleton<IBackgroundQueue>(sp => sp.GetRequiredService<Queue.Queue>());
+        services.TryAddSingleton<Queue.Queue>();
+        services.TryAddSingleton<IBackgroundQueue>(sp => sp.GetRequiredService<Queue.Queue>());
         services.AddHostedService<ProcessorService>();
-        services.AddSingleton<SlotsTracker>();
-        services.AddSingleton<JobRunner>();
-        services.AddSingleton<Metrics>();
+        services.TryAddSingleton<SlotsTracker>();
+        services.TryAddSingleton<JobRunner>();
+        services.TryAddSingleton<Metrics>();
 
         return new IgnisBuilder(services);
     }
