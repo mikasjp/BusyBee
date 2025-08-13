@@ -1,3 +1,4 @@
+using Ignis.Observability;
 using Ignis.Queue;
 using Ignis.Processor;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,9 @@ public static class IgnisModule
         services.AddSingleton<Queue.Queue>();
         services.AddSingleton<IBackgroundQueue>(sp => sp.GetRequiredService<Queue.Queue>());
         services.AddHostedService<ProcessorService>();
+        services.AddSingleton<SlotsTracker>();
+        services.AddSingleton<JobRunner>();
+        services.AddSingleton<Metrics>();
 
         return new IgnisBuilder(services);
     }
