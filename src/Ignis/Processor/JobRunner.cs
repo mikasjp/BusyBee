@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Ignis.Abstractions;
 using Ignis.Observability;
 using Ignis.Queue;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,7 @@ internal sealed class JobRunner(
     SlotsTracker slotTracker)
 {
     private readonly ActivitySource _activitySource = new(TracingConstants.TraceSourceName);
-    
+
     public async Task RunJob(JobWrapper jobItem, CancellationToken stoppingToken)
     {
         await using var scope = serviceProvider.CreateAsyncScope();
@@ -28,13 +29,13 @@ internal sealed class JobRunner(
             .CreateLinkedTokenSource(stoppingToken, jobTimeoutCancellationToken)
             .Token;
         var stopwatch = Stopwatch.StartNew();
+        var context = new JobContext(
+            JobId: jobItem.JobId,
+            QueuedAt: jobItem.QueuedAt,
+            StartedAt: DateTimeOffset.UtcNow);
         try
         {
             logger.LogDebug("Starting job {JobId}", jobItem.JobId);
-            var context = new JobContext(
-                JobId: jobItem.JobId,
-                QueuedAt: jobItem.QueuedAt,
-                StartedAt: DateTimeOffset.UtcNow);
             await jobItem.Job(scope.ServiceProvider, context, combinedCancellationToken);
             metrics.TotalSuccessfulJobsCounter.Add(1);
         }
@@ -45,16 +46,11 @@ internal sealed class JobRunner(
         }
         catch (TaskCanceledException) when (jobTimeoutCancellationToken.IsCancellationRequested)
         {
-            logger.Log(
-                options.Value.JobTimeoutLogLevel ?? LogLevel.None,
-                "Job {JobId} was cancelled due to timeout",
-                jobItem.JobId);
-            metrics.TotalTimedOutJobsCounter.Add(1);
+            await HandleCancellation(context, scope.ServiceProvider, stoppingToken);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while processing job {JobId}", jobItem.JobId);
-            metrics.TotalFailedJobsCounter.Add(1);
+            await HandleFailure(context, ex, scope.ServiceProvider, stoppingToken);
         }
         finally
         {
@@ -66,6 +62,48 @@ internal sealed class JobRunner(
             metrics.ActiveJobsCounter.Add(-1);
             metrics.TotalProcessedJobsCounter.Add(1);
             metrics.JobProcessingDurationHistogram.Record(stopwatch.ElapsedMilliseconds);
+        }
+    }
+
+    private async Task HandleFailure(
+        JobContext context, Exception ex, IServiceProvider scopedServiceProvider, CancellationToken stoppingToken)
+    {
+        logger.LogError(ex, "An error occurred while processing job {JobId}", context.JobId);
+        metrics.TotalFailedJobsCounter.Add(1);
+        var failureHandler = scopedServiceProvider.GetService<IJobFailureHandler>();
+        if (failureHandler is not null)
+        {
+            try
+            {
+                await failureHandler.Handle(context, ex, stoppingToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e,
+                    "An error occurred while handling failure for job {JobId} using {FailureHandler}",
+                    context.JobId, failureHandler.GetType().Name);
+            }
+        }
+    }
+
+    private async Task HandleCancellation(
+        JobContext context, IServiceProvider scopedServiceProvider, CancellationToken stoppingToken)
+    {
+        logger.LogDebug("Job {JobId} was cancelled due to timeout", context.JobId);
+        metrics.TotalTimedOutJobsCounter.Add(1);
+        var timeoutHandler = scopedServiceProvider.GetService<IJobTimeoutHandler>();
+        if (timeoutHandler is not null)
+        {
+            try
+            {
+                await timeoutHandler.Handle(context, stoppingToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e,
+                    "An error occurred while handling timeout for job {JobId} using {TimeoutHandler}",
+                    context.JobId, timeoutHandler.GetType().Name);
+            }
         }
     }
 

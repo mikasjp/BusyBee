@@ -21,7 +21,6 @@ builder.Services
     .AddIgnis()
     .WithUnboundedQueue()
     .WithGlobalJobTimeout(TimeSpan.FromMilliseconds(4000))
-    .WithJobTimeoutLogging()
     .WithLevelOfParallelism(5);
 
 var app = builder.Build();

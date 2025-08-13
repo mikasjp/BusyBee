@@ -20,12 +20,6 @@ public sealed class ProcessorOptions
     /// </summary>
     [JobTimeoutValidation(ErrorMessage = "Job timeout must be greater than zero")]
     public TimeSpan? JobTimeout { get; set; }
-
-    /// <summary>
-    /// The log level to use when logging job timeouts.
-    /// If not specified, the default log level is <see cref="LogLevel.None"/>.
-    /// </summary>
-    public LogLevel? JobTimeoutLogLevel { get; set; }
 }
 
 internal sealed class JobTimeoutValidationAttribute : ValidationAttribute
