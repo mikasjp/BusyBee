@@ -1,6 +1,7 @@
 using Ignis;
 using Ignis.Queue;
 using System.Collections.Concurrent;
+using DemoApp;
 using Ignis.Observability;
 using OpenTelemetry.Metrics;
 
@@ -21,7 +22,9 @@ builder.Services
     .AddIgnis()
     .WithUnboundedQueue()
     .WithGlobalJobTimeout(TimeSpan.FromMilliseconds(4000))
-    .WithLevelOfParallelism(5);
+    .WithLevelOfParallelism(5)
+    .WithJobTimeoutHandler<JobTimeoutHandler>()
+    .WithJobFailureHandler<JobFailureHandler>();
 
 var app = builder.Build();
 
@@ -30,6 +33,11 @@ app
     {
         var jobId = await queue.Enqueue(async (_, ctx, ct) =>
         {
+            if (Random.Shared.Next(0, 9) == 0)
+            {
+                throw new Exception("Simulated job failure");
+            }
+            
             executionLog.TryAdd(DateTimeOffset.UtcNow,
                 $"{ctx.JobId} waited for {(ctx.StartedAt - ctx.QueuedAt).TotalMilliseconds} ms and started at {ctx.StartedAt}");
             await Task.Delay(Random.Shared.Next(3000, 5000), ct); // Simulate work
