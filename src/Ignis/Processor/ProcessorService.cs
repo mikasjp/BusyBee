@@ -1,9 +1,11 @@
-using System.Diagnostics;
 using Ignis.Queue;
+using System.Diagnostics;
+using System.Threading.Channels;
+using Ignis.Processor.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ignis.Processor;
 
@@ -15,27 +17,42 @@ internal sealed class ProcessorService(
 
 {
     private readonly ActivitySource _activitySource = new(Tracing.Constants.TraceSourceName);
+    private readonly Channel<object> _slotTracker = Channel.CreateBounded<object>(
+        new BoundedChannelOptions(options.Value.ParallelJobsCount ?? 1)
+        {
+            FullMode = BoundedChannelFullMode.Wait
+        });
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var batchSize = options.Value.JobsBatchSize ?? 1;
-
+        HashSet<Task> activeTasks = [];
+        for (var i = 0; i < options.Value.ParallelJobsCount; i++)
+        {
+            await _slotTracker.Writer.WriteAsync(new object(), stoppingToken);
+        }
+        
         while (!stoppingToken.IsCancellationRequested)
         {
-            var jobItems = await queue.DequeueBatch(batchSize, stoppingToken);
-            var tasks = jobItems
-                .Select(jobItem => ProcessJob(jobItem, stoppingToken))
-                .ToArray();
+            var availableSlots = await _slotTracker.Reader.ReadAvailable(stoppingToken);
             try
             {
-                logger.LogDebug("Processing a batch of {JobCount} jobs", tasks.Length);
-                var stopwatch = Stopwatch.StartNew();
-                await Task.WhenAll(tasks);
-                stopwatch.Stop();
-                logger.LogDebug(
-                    "Processed a batch of {JobCount} jobs in {ElapsedMilliseconds} ms",
-                    tasks.Length,
-                    stopwatch.ElapsedMilliseconds);
+                var jobItems = (await queue.DequeueBatch(availableSlots.Count, stoppingToken))
+                    .ToArray();
+
+                foreach (var slot in availableSlots.Take(availableSlots.Count - jobItems.Length))
+                {
+                    await _slotTracker.Writer.WriteAsync(slot, stoppingToken);
+                }
+                
+                var tasks = jobItems
+                    .Select(jobItem => ProcessJob(jobItem, stoppingToken));
+                foreach (var task in tasks)
+                {
+                    activeTasks.Add(task);
+                }
+                
+                await Task.WhenAny(activeTasks);
+                activeTasks.RemoveWhere(t => t.IsCompleted || t.IsFaulted || t.IsCanceled);
             }
             catch (TaskCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -91,6 +108,7 @@ internal sealed class ProcessorService(
             logger.LogDebug("Job {JobId} finished in {ElapsedMilliseconds} ms",
                 jobItem.JobId,
                 stopwatch.ElapsedMilliseconds);
+            await _slotTracker.Writer.WriteAsync(new object(), CancellationToken.None);
         }
     }
 

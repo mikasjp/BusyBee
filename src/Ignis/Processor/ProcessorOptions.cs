@@ -10,8 +10,8 @@ public sealed class ProcessorOptions
     /// If not specified, the processor will execute jobs sequentially.
     /// If specified, it must be greater than or equal to 1.
     /// </summary>
-    [Range(1, int.MaxValue, ErrorMessage = "Batch size must be greater than or equal to 1")]
-    public int? JobsBatchSize { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Parallel jobs count must be greater than or equal to 1")]
+    public int? ParallelJobsCount { get; set; }
 
     /// <summary>
     /// The maximum time a job can run before it is considered timed out.

@@ -61,16 +61,16 @@ public sealed class IgnisBuilder
         return this;
     }
     
-    public IgnisBuilder WithJobBatchSize(int batchSize)
+    public IgnisBuilder WithLevelOfParallelism(int levelOfParallelism)
     {
-        if (batchSize <= 0)
+        if (levelOfParallelism <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(batchSize), "Batch size must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(levelOfParallelism), "Level of parallelism must be greater than zero.");
         }
 
         Services.Configure<ProcessorOptions>(options =>
         {
-            options.JobsBatchSize = batchSize;
+            options.ParallelJobsCount = levelOfParallelism;
         });
 
         return this;

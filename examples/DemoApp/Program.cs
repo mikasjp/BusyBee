@@ -11,9 +11,9 @@ builder.Services.AddSwaggerGen();
 builder.Services
     .AddIgnis()
     .WithUnboundedQueue()
-    .WithGlobalJobTimeout(TimeSpan.FromMilliseconds(4500))
+    .WithGlobalJobTimeout(TimeSpan.FromMilliseconds(4000))
     .WithJobTimeoutLogging()
-    .WithJobBatchSize(1);
+    .WithLevelOfParallelism(5);
 
 var app = builder.Build();
 
@@ -23,7 +23,7 @@ app
         var jobId = await queue.Enqueue(async (_, ctx, ct) =>
         {
             executionLog.Add($"{ctx.JobId} waited for {(ctx.StartedAt-ctx.QueuedAt).TotalMilliseconds} ms and started at {ctx.StartedAt}");
-            await Task.Delay(Random.Shared.Next(3000, 6000), ct); // Simulate work
+            await Task.Delay(Random.Shared.Next(3000, 5000), ct); // Simulate work
             var finishedAt = DateTimeOffset.UtcNow;
             executionLog.Add(
                 $"Job {ctx.JobId} finished at {finishedAt}, took {(finishedAt - ctx.StartedAt).TotalMilliseconds} ms");
