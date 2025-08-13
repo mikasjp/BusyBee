@@ -44,7 +44,7 @@ await queue.Enqueue(async (services, context, cancellationToken) =>
 ### ⚙️ **Highly Configurable**
 - Unbounded or bounded queues with multiple overflow strategies
 - Configurable job timeouts both globally and per job
-- Flexible job batching to optimize throughput
+- Parallel job processing with configurable slots pool size
 
 ### 📊 **Built-in Observability**
 - Job execution flow logging
@@ -66,7 +66,7 @@ builder.Services
     .WithUnboundedQueue()
     .WithGlobalJobTimeout(TimeSpan.FromSeconds(30))
     .WithJobTimeoutLogging(LogLevel.Warning)
-    .WithJobBatchSize(10);
+    .WithLevelOfParallelism(10);
 ```
 
 ### Queue Configuration
@@ -110,9 +110,9 @@ builder.Services.AddIgnis()
 ### Performance Tuning
 
 ```csharp
-// Process jobs in batches if needed
+// Process multiple jobs in parallel
 builder.Services.AddIgnis()
-    .WithJobBatchSize(20);
+    .WithLevelOfParallelism(20);
 ```
 
 ## Job Context
@@ -159,7 +159,7 @@ builder.Services
     .WithBoundedQueue(capacity: 10000, OverflowStrategy.DropOldest)
     .WithGlobalJobTimeout(TimeSpan.FromMinutes(5))
     .WithJobTimeoutLogging(LogLevel.Warning)
-    .WithJobBatchSize(50);
+    .WithLevelOfParallelism(5);
 
 // Register your services
 builder.Services.AddScoped<IEmailService, EmailService>();
