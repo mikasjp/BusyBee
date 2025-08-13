@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>🔥 Fast and traceable background job processing for .NET</strong>
+  <strong>🔥 Fast and observable background job processing for .NET</strong>
 </p>
 
 ---
@@ -49,6 +49,7 @@ await queue.Enqueue(async (services, context, cancellationToken) =>
 ### 📊 **Built-in Observability**
 - Job execution flow logging
 - Tracing ready for OpenTelemetry
+- Detailed OpenTelemetry ready metrics (jobs count, execution times, wait times, and more...)
 
 ### 🔧 **Developer Friendly**
 - Fluent configuration API
@@ -136,14 +137,17 @@ await queue.Enqueue(async (services, context, cancellationToken) =>
 ```
 
 ## OpenTelemetry Integration
-Ignis supports OpenTelemetry for tracing job execution. This allows you to monitor and analyze job performance in production environments.
+Ignis supports OpenTelemetry for metrics and tracing. This allows you to monitor and analyze job performance in production environments.
 Enable OpenTelemetry in your application:
 
 ```csharp
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
-        .AddSource(Ignis.Tracing.Constants.SourceName)
-        .AddConsoleExporter());
+        .AddSource(Ignis.Observability.TracingConstants.TraceSourceName)
+        .AddConsoleExporter())
+    .WithMetrics(metrics => metrics
+        .AddMeter(Ignis.Observability.MetricsConstants.MeterName)
+        .AddPrometheusExporter());
 ```
 
 ## Real-World Example
