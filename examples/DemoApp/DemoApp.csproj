@@ -21,4 +21,8 @@
       <ProjectReference Include="..\..\src\Ignis\Ignis.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+    </ItemGroup>
+
 </Project>
