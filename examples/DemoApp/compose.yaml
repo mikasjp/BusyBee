@@ -5,7 +5,7 @@
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8100:8080"
+      - "127.0.0.1:8100:8080"
     depends_on:
       - seq.ignis
     environment:
@@ -19,7 +19,7 @@
   seq.ignis:
     image: datalust/seq:2025.2
     ports:
-      - "8200:80"
+      - "127.0.0.1:8200:80"
     environment:
       ACCEPT_EULA: Y
       SEQ_FIRSTRUN_NOAUTHENTICATION: true
@@ -35,7 +35,7 @@
     networks:
       - ignis.internal
     ports:
-      - "8300:9090"
+      - "127.0.0.1:8300:9090"
 
 
 networks:
