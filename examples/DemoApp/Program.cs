@@ -1,14 +1,14 @@
 using Ignis;
 using DemoApp;
-using Ignis.Queue;
 using System.Collections.Concurrent;
-
-var executionLog = new ConcurrentDictionary<DateTimeOffset, string>();
+using DemoApp.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSwaggerModule();
 builder.AddOpenTelemetryModule();
+
+builder.Services.AddSingleton<ConcurrentBag<LogEntry>>();
 
 builder.Services
     .AddIgnis()
@@ -19,35 +19,8 @@ builder.Services
     .WithJobFailureHandler<JobFailureHandler>();
 
 var app = builder.Build();
-
-app
-    .MapPost("/queue", async (IBackgroundQueue queue, CancellationToken cancellationToken) =>
-    {
-        var jobId = await queue.Enqueue(async (_, ctx, ct) =>
-        {
-            if (Random.Shared.Next(0, 9) == 0)
-            {
-                throw new Exception("Simulated job failure");
-            }
-            
-            executionLog.TryAdd(DateTimeOffset.UtcNow,
-                $"{ctx.JobId} waited for {(ctx.StartedAt - ctx.QueuedAt).TotalMilliseconds} ms and started at {ctx.StartedAt}");
-            await Task.Delay(Random.Shared.Next(3000, 5000), ct); // Simulate work
-            var finishedAt = DateTimeOffset.UtcNow;
-            executionLog.TryAdd(
-                finishedAt,
-                $"Job {ctx.JobId} finished at {finishedAt}, took {(finishedAt - ctx.StartedAt).TotalMilliseconds} ms");
-        }, cancellationToken);
-
-        return Results.Ok(new { JobId = jobId });
-    })
-    .WithName("EnqueueJob");
-app
-    .MapGet("/queue", () => Results.Ok(new
-    {
-        JobsExecutionLog = executionLog.OrderBy(x => x.Key).Select(x => x.Value)
-    }))
-    .WithName("GetQueueExecutionLog");
+app.MapEnqueueJob();
+app.MapGetQueueExecutionLog();
 
 app.UseSwagger();
 app.UseSwaggerUI();
