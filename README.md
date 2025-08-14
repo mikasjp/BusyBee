@@ -190,23 +190,20 @@ app.Run();
 
 ## Advanced Usage
 
-### Error Handling
+### Errors and timeouts handling
+
+Implement and register your own `IJobFailureHandler` to handle job failures.
 
 ```csharp
-await queue.Enqueue(async (services, context, cancellationToken) =>
-{
-    try
-    {
-        // Your job logic here
-        await DoSomeWorkAsync(cancellationToken);
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger>();
-        logger.LogError(ex, "Job {JobId} failed", context.JobId);
-        throw; // Re-throw to mark job as failed
-    }
-}, cancellationToken);
+services.AddIgnis()
+    .WithJobFailureHandler<MyCustomJobFailureHandler>();
+```
+
+To handle job timeouts, you can implement and register `IJobTimeoutHandler`:
+
+```csharp
+services.AddIgnis()
+    .WithJobTimeoutHandler<MyCustomJobTimeoutHandler>();
 ```
 
 ### Long-Running Jobs
