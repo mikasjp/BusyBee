@@ -1,0 +1,43 @@
+﻿services:
+  
+  demo.ignis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8100:8080"
+    depends_on:
+      - seq.ignis
+    environment:
+      OtlpExporterOptions__logging__Endpoint: http://seq.ignis/ingest/otlp/v1/logs
+      OtlpExporterOptions__logging__Protocol: HttpProtobuf
+      OtlpExporterOptions__tracing__Endpoint: http://seq.ignis/ingest/otlp/v1/traces
+      OtlpExporterOptions__tracing__Protocol: HttpProtobuf
+    networks:
+      - ignis.internal
+  
+  seq.ignis:
+    image: datalust/seq:2025.2
+    ports:
+      - "8200:80"
+    environment:
+      ACCEPT_EULA: Y
+      SEQ_FIRSTRUN_NOAUTHENTICATION: true
+    networks:
+      - ignis.internal
+        
+  prometheus.ignis:
+    image: prom/prometheus:v3.5.0
+    depends_on:
+      - demo.ignis
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - ignis.internal
+    ports:
+      - "8300:9090"
+
+
+networks:
+  ignis.internal:
+    driver: bridge

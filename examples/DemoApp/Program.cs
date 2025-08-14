@@ -1,23 +1,15 @@
 using Ignis;
+using DemoApp;
 using Ignis.Queue;
 using System.Collections.Concurrent;
-using DemoApp;
-using Ignis.Observability;
-using OpenTelemetry.Metrics;
 
 var executionLog = new ConcurrentDictionary<DateTimeOffset, string>();
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services
-    .AddOpenTelemetry()
-    .WithTracing(b => b
-        .AddSource(TracingConstants.TraceSourceName))
-    .WithMetrics(b => b
-        .AddMeter(MetricsConstants.MeterName)
-        .AddPrometheusExporter());
+builder.AddSwaggerModule();
+builder.AddOpenTelemetryModule();
+
 builder.Services
     .AddIgnis()
     .WithUnboundedQueue()
