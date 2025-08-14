@@ -14,7 +14,7 @@ internal sealed class SlotsTracker(IOptions<ProcessorOptions> options)
 
     public async Task InitializeSlots(CancellationToken stoppingToken)
     {
-        for (var i = 0; i < options.Value.ParallelJobsCount; i++)
+        for (var i = 0; i < (options.Value.ParallelJobsCount ?? 1); i++)
         {
             await _slotTracker.Writer.WriteAsync(new object(), stoppingToken);
         }
