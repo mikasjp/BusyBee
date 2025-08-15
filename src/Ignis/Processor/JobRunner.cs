@@ -58,7 +58,7 @@ internal sealed class JobRunner(
             logger.LogDebug("Job {JobId} finished in {ElapsedMilliseconds} ms",
                 jobItem.JobId,
                 stopwatch.ElapsedMilliseconds);
-            await slotTracker.ReleaseSlots(1, stoppingToken);
+            await slotTracker.ReleaseSlot();
             metrics.ActiveJobsCounter.Add(-1);
             metrics.TotalProcessedJobsCounter.Add(1);
             metrics.JobProcessingDurationHistogram.Record(stopwatch.ElapsedMilliseconds);
