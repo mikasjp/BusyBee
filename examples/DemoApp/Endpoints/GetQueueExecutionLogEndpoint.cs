@@ -17,7 +17,8 @@ internal static class GetQueueExecutionLogEndpoint
                         .GroupBy(x => x.JobId)
                         .ToDictionary(x => x.Key, x => x.OrderBy(e => e.Timestamp))
                 }))
-            .WithName("GetQueueExecutionLog");
+            .WithName("GetQueueExecutionLog")
+            .WithDescription("Retrieves the execution log of all jobs in the queue, ordered by their enqueued time.");
 
         return builder;
     }
