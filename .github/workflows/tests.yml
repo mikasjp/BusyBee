@@ -30,7 +30,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           mkdir -p TestResults/coverage
-          for proj in $(find . -type f -name '"'*.csproj'"' ! -name '"'*Tests.csproj'); do
+          for proj in $(find . -type f -name '*.csproj' ! -name '*Tests.csproj'); do
             echo "Running tests for $proj"
             dotnet test "$proj" --configuration Release --no-build --verbosity normal \
               /p:CollectCoverage=true \
