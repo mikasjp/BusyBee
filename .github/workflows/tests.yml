@@ -41,7 +41,7 @@ jobs:
         run: |
           dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.*
           reportgenerator \
-            -reports:TestResults/coverage/*.xml \
+            -reports:**/coverage.cobertura.xml \
             -targetdir:TestResults/coverage-report \
             -reporttypes:Html
 
