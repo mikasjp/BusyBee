@@ -1,0 +1,46 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests with coverage
+        run: dotnet test --configuration Release --no-build --verbosity normal \
+          /p:CollectCoverage=true \
+          /p:CoverletOutput=TestResults/coverage/ \
+          /p:CoverletOutputFormat=cobertura
+
+      - name: Generate coverage report
+        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.* &&
+          reportgenerator -reports:TestResults/coverage/coverage.cobertura.xml \
+          -targetdir:TestResults/coverage-report \
+          -reporttypes:Html
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: TestResults/coverage-report
