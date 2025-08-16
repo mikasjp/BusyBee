@@ -34,7 +34,6 @@ jobs:
             echo "Running tests for $proj"
             dotnet test "$proj" --configuration Release --no-build --verbosity normal \
               --collect:"XPlat Code Coverage"
-            mv $(dirname "$proj")/TestResults/coverage.cobertura.xml TestResults/coverage/$(basename $proj).coverage.cobertura.xml
           done
 
       - name: Generate merged coverage report
