@@ -4,7 +4,7 @@ namespace Ignis.Processor;
 
 internal sealed class SlotsTracker(IOptions<ProcessorOptions> options)
 {
-    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(options.Value.ParallelJobsCount ?? 1);
+    private readonly SemaphoreSlim _semaphore = new(options.Value.ParallelJobsCount ?? 1);
 
     public Task ReserveSlot(CancellationToken cancellationToken)
     {

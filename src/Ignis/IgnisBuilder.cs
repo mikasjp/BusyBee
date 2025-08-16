@@ -1,11 +1,13 @@
 using Ignis.Abstractions;
 using Ignis.Processor;
 using Ignis.Queue;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Ignis;
 
+[PublicAPI]
 public sealed class IgnisBuilder
 {
     public IServiceCollection Services { get; }

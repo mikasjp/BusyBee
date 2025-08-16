@@ -1,11 +1,13 @@
 using Ignis.Observability;
 using Ignis.Queue;
 using Ignis.Processor;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Ignis;
 
+[PublicAPI]
 public static class IgnisModule
 {
     public static IgnisBuilder AddIgnis(
