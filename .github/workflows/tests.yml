@@ -33,9 +33,8 @@ jobs:
           for proj in $(find . -type f -name '*Tests.csproj'); do
             echo "Running tests for $proj"
             dotnet test "$proj" --configuration Release --no-build --verbosity normal \
-              /p:CollectCoverage=true \
-              /p:CoverletOutput=TestResults/coverage/$(basename $proj).xml \
-              /p:CoverletOutputFormat=cobertura
+              --collect:"XPlat Code Coverage"
+            mv $(dirname "$proj")/TestResults/coverage.cobertura.xml TestResults/coverage/$(basename $proj).coverage.cobertura.xml
           done
 
       - name: Generate merged coverage report
