@@ -5,17 +5,24 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <EnablePackageValidation>true</EnablePackageValidation>
     </PropertyGroup>
     
     <PropertyGroup>
         <PackageId>Ignis</PackageId>
-        <PackageType>Dependency</PackageType>
         <IncludeSymbols>true</IncludeSymbols>
+        <DebugType>portable</DebugType>
+        <DebugSymbols>true</DebugSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <Version>0.0.1</Version>
         <Authors>Mikołaj Kamiński</Authors>
         <PackageIcon>icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryUrl>https://github.com/mikasjp/Ignis</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/mikasjp/Ignis</PackageProjectUrl>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageTags>background processing;background jobs;background tasks;background queue;fire and forget</PackageTags>
         <Description>
             Ignis is a lightweight library for in-memory background processing in .NET applications.
@@ -27,12 +34,15 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
       <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
+      <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="icon.png" Pack="true" PackagePath="\" >
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+      <None Include="icon.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="" />
     </ItemGroup>
 
 </Project>

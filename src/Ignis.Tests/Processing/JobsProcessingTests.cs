@@ -12,7 +12,7 @@ public sealed class JobsProcessingTests
 {
     [TestCase(1)]
     [TestCase(2)]
-    [Timeout(1000)]
+    [CancelAfter(1000)]
     public async Task EnqueuedJobs_ShouldBeProcessed(int jobsCount)
     {
         // Arrange

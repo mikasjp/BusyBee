@@ -12,7 +12,7 @@ namespace Ignis.Tests.Processing;
 public sealed class JobFailureTests
 {
     [Test]
-    [Timeout(1000)]
+    [CancelAfter(1000)]
     public async Task JobFailure_ShouldTriggerFailureHandler()
     {
         // Arrange
