@@ -26,8 +26,7 @@ internal sealed class ProcessorService(
                 logger.LogDebug("Dequeued {JobId} job for processing", jobItem.JobId);
 
                 ActivateJob(jobItem, stoppingToken);
-
-                await Task.WhenAny(_activeTasks);
+                
                 _activeTasks.RemoveWhere(t => t.IsCompleted || t.IsFaulted || t.IsCanceled);
             }
             catch (TaskCanceledException) when (stoppingToken.IsCancellationRequested)
