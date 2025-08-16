@@ -28,16 +28,18 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Run tests with coverage
-        run: dotnet test --configuration Release --no-build --verbosity normal \
-          /p:CollectCoverage=true \
-          /p:CoverletOutput=TestResults/coverage/ \
-          /p:CoverletOutputFormat=cobertura
+        run: |
+          dotnet test --configuration Release --no-build --verbosity normal \
+            /p:CollectCoverage=true \
+            /p:CoverletOutput=TestResults/coverage/ \
+            /p:CoverletOutputFormat=cobertura
 
       - name: Generate coverage report
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.* &&
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.* 
           reportgenerator -reports:TestResults/coverage/coverage.cobertura.xml \
-          -targetdir:TestResults/coverage-report \
-          -reporttypes:Html
+                          -targetdir:TestResults/coverage-report \
+                          -reporttypes:Html
 
       - name: Upload coverage report artifact
         uses: actions/upload-artifact@v4
