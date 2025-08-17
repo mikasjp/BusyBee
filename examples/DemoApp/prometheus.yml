@@ -4,4 +4,4 @@ scrape_configs:
   - job_name: demo
     static_configs:
       - targets:
-          - demo.ignis:8080
+          - demo.busybee:8080

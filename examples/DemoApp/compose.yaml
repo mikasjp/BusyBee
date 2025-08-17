@@ -1,22 +1,22 @@
 ﻿services:
   
-  demo.ignis:
+  demo.busybee:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "127.0.0.1:8100:8080"
     depends_on:
-      - seq.ignis
+      - seq.busybee
     environment:
-      OtlpExporterOptions__logging__Endpoint: http://seq.ignis/ingest/otlp/v1/logs
+      OtlpExporterOptions__logging__Endpoint: http://seq.busybee/ingest/otlp/v1/logs
       OtlpExporterOptions__logging__Protocol: HttpProtobuf
-      OtlpExporterOptions__tracing__Endpoint: http://seq.ignis/ingest/otlp/v1/traces
+      OtlpExporterOptions__tracing__Endpoint: http://seq.busybee/ingest/otlp/v1/traces
       OtlpExporterOptions__tracing__Protocol: HttpProtobuf
     networks:
-      - ignis.internal
+      - busybee.internal
   
-  seq.ignis:
+  seq.busybee:
     image: datalust/seq:2025.2
     ports:
       - "127.0.0.1:8200:80"
@@ -24,20 +24,20 @@
       ACCEPT_EULA: Y
       SEQ_FIRSTRUN_NOAUTHENTICATION: true
     networks:
-      - ignis.internal
+      - busybee.internal
         
-  prometheus.ignis:
+  prometheus.busybee:
     image: prom/prometheus:v3.5.0
     depends_on:
-      - demo.ignis
+      - demo.busybee
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     networks:
-      - ignis.internal
+      - busybee.internal
     ports:
       - "127.0.0.1:8300:9090"
 
 
 networks:
-  ignis.internal:
+  busybee.internal:
     driver: bridge

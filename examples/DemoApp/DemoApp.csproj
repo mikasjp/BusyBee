@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Ignis\Ignis.csproj" />
+      <ProjectReference Include="..\..\src\BusyBee\BusyBee.csproj" />
     </ItemGroup>
 
     <ItemGroup>

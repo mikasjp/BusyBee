@@ -1,5 +1,5 @@
-using Ignis.Abstractions;
-using Ignis.Processor;
+using BusyBee.Abstractions;
+using BusyBee.Processor;
 
 namespace DemoApp;
 

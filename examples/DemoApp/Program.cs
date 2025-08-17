@@ -1,4 +1,4 @@
-using Ignis;
+using BusyBee;
 using DemoApp;
 using System.Collections.Concurrent;
 using DemoApp.Endpoints;
@@ -11,7 +11,7 @@ builder.AddOpenTelemetryModule();
 builder.Services.AddSingleton<ConcurrentBag<LogEntry>>();
 
 builder.Services
-    .AddIgnis()
+    .AddBusyBee()
     .WithUnboundedQueue()
     .WithGlobalJobTimeout(TimeSpan.FromMilliseconds(4000))
     .WithLevelOfParallelism(5)

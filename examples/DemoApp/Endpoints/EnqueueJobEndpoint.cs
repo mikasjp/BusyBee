@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using Ignis.Processor;
-using Ignis.Queue;
+using BusyBee.Processor;
+using BusyBee.Queue;
 
 namespace DemoApp.Endpoints;
 

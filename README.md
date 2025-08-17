@@ -1,30 +1,30 @@
-# Ignis
+# BusyBee
 
 <p align="center">
-  <img src="assets/logo.jpg" alt="Ignis Logo" width="200" />
+  <img src="assets/logo.png" alt="BusyBee Logo" width="200" />
 </p>
 
 <p align="center">
-  <strong>🔥 Fast and observable background job processing for .NET</strong>
+  <strong>🐝💨 Fast and observable background job processing for .NET</strong>
 </p>
 
 ---
 
-Ignis is a high-performance .NET background processing library built on native channels. It provides a simple, configurable, and observable solution for handling background tasks with built-in OpenTelemetry support and flexible queue management.
+BusyBee is a high-performance .NET background processing library built on native channels. It provides a simple, configurable, and observable solution for handling background tasks with built-in OpenTelemetry support and flexible queue management.
 
 ## Installation
 
 ```bash
-dotnet add package Ignis
+dotnet add package BusyBee
 ```
 
 ## Quick Start
 
-Register Ignis in your DI container and start processing background jobs:
+Register BusyBee in your DI container and start processing background jobs:
 
 ```csharp
 // Program.cs
-builder.Services.AddIgnis();
+builder.Services.AddBusyBee();
 
 // Inject IBackgroundQueue and enqueue jobs
 await queue.Enqueue(async (services, context, cancellationToken) =>
@@ -63,7 +63,7 @@ await queue.Enqueue(async (services, context, cancellationToken) =>
 
 ```csharp
 builder.Services
-    .AddIgnis()
+    .AddBusyBee()
     .WithUnboundedQueue()
     .WithGlobalJobTimeout(TimeSpan.FromSeconds(30))
     .WithLevelOfParallelism(10);
@@ -73,17 +73,17 @@ builder.Services
 
 **Unbounded Queue** - No capacity limits:
 ```csharp
-builder.Services.AddIgnis().WithUnboundedQueue();
+builder.Services.AddBusyBee().WithUnboundedQueue();
 ```
 
 **Bounded Queue** - With capacity and overflow handling:
 ```csharp
 // Throw exception when queue is full
-builder.Services.AddIgnis()
+builder.Services.AddBusyBee()
     .WithBoundedQueue(capacity: 1000, OverflowStrategy.ThrowException);
 
 // Drop oldest jobs when queue is full
-builder.Services.AddIgnis()
+builder.Services.AddBusyBee()
     .WithBoundedQueue(capacity: 1000, OverflowStrategy.DropOldest);
 ```
 
@@ -99,7 +99,7 @@ Supported overflow strategies:
 
 ```csharp
 // Set global timeout for all jobs
-builder.Services.AddIgnis()
+builder.Services.AddBusyBee()
     .WithGlobalJobTimeout(TimeSpan.FromSeconds(30));
 ```
 
@@ -107,7 +107,7 @@ builder.Services.AddIgnis()
 
 ```csharp
 // Process multiple jobs in parallel
-builder.Services.AddIgnis()
+builder.Services.AddBusyBee()
     .WithLevelOfParallelism(20);
 ```
 
@@ -132,29 +132,29 @@ await queue.Enqueue(async (services, context, cancellationToken) =>
 ```
 
 ## OpenTelemetry Integration
-Ignis supports OpenTelemetry for metrics and tracing. This allows you to monitor and analyze job performance in production environments.
+BusyBee supports OpenTelemetry for metrics and tracing. This allows you to monitor and analyze job performance in production environments.
 Enable OpenTelemetry in your application:
 
 ```csharp
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
-        .AddSource(Ignis.Observability.TracingConstants.TraceSourceName)
+        .AddSource(BusyBee.Observability.TracingConstants.TraceSourceName)
         .AddConsoleExporter())
     .WithMetrics(metrics => metrics
-        .AddMeter(Ignis.Observability.MetricsConstants.MeterName)
+        .AddMeter(BusyBee.Observability.MetricsConstants.MeterName)
         .AddPrometheusExporter());
 ```
 
 ## Real-World Example
 
-Here's a complete example of using Ignis in a web API:
+Here's a complete example of using BusyBee in a web API:
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Ignis for production workload
+// Configure BusyBee for production workload
 builder.Services
-    .AddIgnis()
+    .AddBusyBee()
     .WithBoundedQueue(capacity: 10000, OverflowStrategy.DropOldest)
     .WithGlobalJobTimeout(TimeSpan.FromMinutes(5))
     .WithLevelOfParallelism(5);
@@ -195,14 +195,14 @@ app.Run();
 Implement and register your own `IJobFailureHandler` to handle job failures.
 
 ```csharp
-services.AddIgnis()
+services.AddBusyBee()
     .WithJobFailureHandler<MyCustomJobFailureHandler>();
 ```
 
 To handle job timeouts, you can implement and register `IJobTimeoutHandler`:
 
 ```csharp
-services.AddIgnis()
+services.AddBusyBee()
     .WithJobTimeoutHandler<MyCustomJobTimeoutHandler>();
 ```
 

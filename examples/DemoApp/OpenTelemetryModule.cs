@@ -1,4 +1,4 @@
-using Ignis.Observability;
+using BusyBee.Observability;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
