@@ -1,6 +1,6 @@
-# Ignis demo app
+# BusyBee demo app
 
-A minimal web app showcasing Ignis: a background job queue with OpenTelemetry, Swagger, Prometheus metrics, and Seq for
+A minimal web app showcasing BusyBee: a background job queue with OpenTelemetry, Swagger, Prometheus metrics, and Seq for
 centralized logging and tracing.
 
 ## Quick start (Docker Compose)
