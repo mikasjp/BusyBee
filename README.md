@@ -145,48 +145,14 @@ builder.Services.AddOpenTelemetry()
         .AddPrometheusExporter());
 ```
 
-## Real-World Example
+## Example app
 
-Here's a complete example of using BusyBee in a web API:
-
-```csharp
-var builder = WebApplication.CreateBuilder(args);
-
-// Configure BusyBee for production workload
-builder.Services
-    .AddBusyBee()
-    .WithBoundedQueue(capacity: 10000, OverflowStrategy.DropOldest)
-    .WithGlobalJobTimeout(TimeSpan.FromMinutes(5))
-    .WithLevelOfParallelism(5);
-
-// Register your services
-builder.Services.AddScoped<IEmailService, EmailService>();
-
-var app = builder.Build();
-
-// API endpoint for sending emails
-app.MapPost("/send-email", async (
-    IBackgroundQueue queue,
-    EmailRequest request,
-    CancellationToken cancellationToken) =>
-{
-    var jobId = await queue.Enqueue(async (services, context, ct) =>
-    {
-        var emailService = services.GetRequiredService<IEmailService>();
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        
-        logger.LogInformation("Sending email for job {JobId}", context.JobId);
-        
-        await emailService.SendAsync(request.To, request.Subject, request.Body, ct);
-        
-        logger.LogInformation("Email sent successfully for job {JobId}", context.JobId);
-    }, cancellationToken);
-
-    return Results.Accepted(new { JobId = jobId });
-});
-
-app.Run();
-```
+See the [DemoApp](examples/DemoApp/README.md) for a complete example of BusyBee in action, including:
+- Web API with Swagger UI for API exploration 
+- OpenTelemetry tracing and metrics setup
+- Seq for centralized logging and tracing
+- Prometheus integration for metrics scraping
+- Docker Compose setup for easy deployment
 
 ## Advanced Usage
 

@@ -36,7 +36,7 @@ docker compose down -v
 curl -X POST http://localhost:8100/queue
 ```
 
-Response contains the JobId; the job runs asynchronously. Logs and traces are sent to Seq.
+Response contains the JobId; the job runs asynchronously. Logs and traces are sent to Seq. Jobs may fail or timeout randomly to demonstrate error handling.
 
 - Get aggregated execution log (GET /queue):
 
@@ -45,3 +45,7 @@ curl http://localhost:8100/queue
 ```
 
 Returns a grouped log of job events ordered by enqueue and event timestamps.
+
+## Helpful links
+
+- Not familiar with Seq? Here is a quick intro to [traces view](https://datalust.co/docs/tracing#viewing-a-trace).
