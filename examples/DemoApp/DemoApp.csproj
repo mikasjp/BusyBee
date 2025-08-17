@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
