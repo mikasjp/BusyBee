@@ -6,7 +6,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["examples/DemoApp/DemoApp.csproj", "examples/DemoApp/"]
-COPY ["src/Ignis/Ignis.csproj", "src/Ignis/"]
+COPY ["src/BusyBee/BusyBee.csproj", "src/BusyBee/"]
 RUN dotnet restore "examples/DemoApp/DemoApp.csproj"
 COPY . .
 WORKDIR "/src/examples/DemoApp"
