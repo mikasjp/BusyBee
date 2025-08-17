@@ -1,12 +1,14 @@
 # BusyBee
 
 <p align="center">
-  <img src="assets/logo.png" alt="BusyBee Logo" width="200" />
-</p>
-
-<p align="center">
   <strong>🐝💨 Fast and observable background job processing for .NET</strong>
 </p>
+
+---
+
+[![NuGet Version](https://img.shields.io/nuget/v/BusyBee)](https://www.nuget.org/packages/BusyBee#versions-body-tab)
+![License](https://img.shields.io/github/license/mikasjp/BusyBee)
+[![Build and Test](https://github.com/mikasjp/BusyBee/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/mikasjp/BusyBee/actions/workflows/tests.yml)
 
 ---
 
