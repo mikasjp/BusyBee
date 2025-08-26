@@ -29,7 +29,7 @@ internal sealed class ProcessorService(
                 
                 _activeTasks.RemoveWhere(t => t.IsCompleted || t.IsFaulted || t.IsCanceled);
             }
-            catch (TaskCanceledException) when (stoppingToken.IsCancellationRequested)
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
                 logger.LogDebug("Gracefully stopping job processing as cancellation was requested");
                 break;
