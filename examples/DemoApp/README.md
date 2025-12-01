@@ -9,7 +9,7 @@ Requirements: Docker + Docker Compose.
 
 ```bash
 cd examples/DemoApp
-docker compose up -d
+docker compose up -d --build
 ```
 
 Stop and clean up:
@@ -45,6 +45,12 @@ curl http://localhost:8100/queue
 ```
 
 Returns a grouped log of job events ordered by enqueue and event timestamps.
+
+- Cancel a job (POST /job/{jobId}/cancel):
+
+```bash
+curl -X POST http://localhost:8100/job/{jobId}/cancel
+```
 
 ## Helpful links
 

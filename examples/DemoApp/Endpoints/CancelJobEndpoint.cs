@@ -9,7 +9,7 @@ internal static class CancelJobEndpoint
         ArgumentNullException.ThrowIfNull(builder);
         
         builder
-            .MapPost("/job/cancel/{jobId:guid}", async (
+            .MapPost("/job/{jobId:guid}/cancel", async (
                 Guid jobId,
                 IJobCancellationService jobCancellationService) =>
             {
