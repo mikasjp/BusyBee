@@ -50,7 +50,7 @@ internal static class EnqueueJobEndpoint
                 Message:
                 $"{ctx.JobId} waited for {(ctx.StartedAt - ctx.QueuedAt).TotalMilliseconds} ms and started at {ctx.StartedAt}"));
 
-        await Task.Delay(Random.Shared.Next(3000, 5000), cancellationToken); // Simulate work which may time out
+        await Task.Delay(Random.Shared.Next(10000, 15000), cancellationToken); // Simulate work which may time out
 
         var finishedAt = DateTimeOffset.UtcNow;
         executionLog.Add(

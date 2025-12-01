@@ -1,4 +1,5 @@
 using BusyBee.Abstractions;
+using BusyBee.JobCancellation;
 using BusyBee.Queue;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -34,6 +35,36 @@ public sealed class DependencyInjectionTests
 
         // Assert
         services.Where(service => service.ServiceType == typeof(IBackgroundQueue))
+            .ShouldHaveSingleItem();
+    }
+    
+    [Test]
+    public void AddBusyBee_ShouldRegisterJobCancellationService()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddBusyBee();
+
+        // Assert
+        services.ShouldContain(sp =>
+            sp.ServiceType == typeof(IJobCancellationService)
+            && sp.Lifetime == ServiceLifetime.Singleton);
+    }
+    
+    [Test]
+    public void AddBusyBee_CalledMultipleTimes_ShouldRegisterSingleJobCancellationService()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddBusyBee();
+        services.AddBusyBee();
+
+        // Assert
+        services.Where(service => service.ServiceType == typeof(IJobCancellationService))
             .ShouldHaveSingleItem();
     }
 

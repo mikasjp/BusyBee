@@ -33,13 +33,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
-      <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.8" />
+      <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.8" />
     </ItemGroup>
     
     <ItemGroup>
-      <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
-      <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" />
+      <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="8.0.0" />
+      <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" Version="2025.2.4" />
     </ItemGroup>
 
     <ItemGroup>

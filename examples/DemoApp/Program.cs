@@ -13,14 +13,16 @@ builder.Services.AddSingleton<ConcurrentBag<LogEntry>>();
 builder.Services
     .AddBusyBee()
     .WithUnboundedQueue()
-    .WithGlobalJobTimeout(TimeSpan.FromMilliseconds(4000))
+    .WithGlobalJobTimeout(TimeSpan.FromMilliseconds(14000))
     .WithLevelOfParallelism(5)
     .WithJobTimeoutHandler<JobTimeoutHandler>()
-    .WithJobFailureHandler<JobFailureHandler>();
+    .WithJobFailureHandler<JobFailureHandler>()
+    .WithManualCancellationHandler<ManualCancellationHandler>();
 
 var app = builder.Build();
 app.MapEnqueueJob();
 app.MapGetQueueExecutionLog();
+app.MapCancelJob();
 
 app.UseSwagger();
 app.UseSwaggerUI();

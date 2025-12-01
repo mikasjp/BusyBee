@@ -1,14 +1,19 @@
 using System.Diagnostics;
 using System.Threading.Channels;
+using BusyBee.JobCancellation;
 using BusyBee.Processor;
 using BusyBee.Queue.Exceptions;
 using Microsoft.Extensions.Options;
 
 namespace BusyBee.Queue;
 
-internal class Queue(IOptions<QueueOptions> options) : IBackgroundQueue
+internal class Queue(
+    IOptions<QueueOptions> options,
+    JobCancellationTokenSourceRegistry cancellationTokenSourceRegistry) : IBackgroundQueue
 {
-    private readonly QueueOptions _options = options.Value ?? throw new ArgumentNullException(nameof(options), "Queue options cannot be null.");
+    private readonly QueueOptions _options =
+        options.Value ?? throw new ArgumentNullException(nameof(options), "Queue options cannot be null.");
+
     private readonly Channel<JobWrapper> _channel = CreateChannel(options.Value);
 
     public async Task<Guid> Enqueue(
@@ -17,13 +22,12 @@ internal class Queue(IOptions<QueueOptions> options) : IBackgroundQueue
         TimeSpan? timeout = null)
     {
         ArgumentNullException.ThrowIfNull(job);
-
-        var jobId = Guid.NewGuid();
-
+        
         var jobWrapper = new JobWrapper(
-            JobId: jobId,
+            JobId: Guid.NewGuid(),
             Timeout: timeout,
             QueuedAt: DateTimeOffset.UtcNow,
+            CancellationTokenSource: new CancellationTokenSource(),
             ActivityContext: Activity.Current?.Context,
             Job: job);
 
@@ -40,9 +44,11 @@ internal class Queue(IOptions<QueueOptions> options) : IBackgroundQueue
             await _channel.Writer.WriteAsync(jobWrapper, cancellationToken);
         }
 
-        return jobId;
+        cancellationTokenSourceRegistry.Register(jobWrapper.JobId, jobWrapper.CancellationTokenSource);
+        
+        return jobWrapper.JobId;
     }
-    
+
     public async Task<JobWrapper> Dequeue(CancellationToken cancellationToken)
     {
         return await _channel.Reader.ReadAsync(cancellationToken);

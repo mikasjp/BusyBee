@@ -58,6 +58,7 @@ await queue.Enqueue(async (services, context, cancellationToken) =>
 - Full dependency injection support
 - Comprehensive cancellation token support
 - Rich job context information
+- Manual job cancellation support
 
 ## Configuration
 
@@ -172,6 +173,13 @@ To handle job timeouts, you can implement and register `IJobTimeoutHandler`:
 ```csharp
 services.AddBusyBee()
     .WithJobTimeoutHandler<MyCustomJobTimeoutHandler>();
+```
+
+To handle manual job cancellations, implement and register `IManualCancellationHandler`:
+
+```csharp
+services.AddBusyBee()
+    .WithManualCancellationHandler<MyCustomManualCancellationHandler>();
 ```
 
 ### Long-Running Jobs

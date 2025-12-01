@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using BusyBee.Abstractions;
+using BusyBee.JobCancellation;
 using BusyBee.Observability;
 using BusyBee.Queue;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,8 @@ internal sealed class JobRunner(
     ILogger<JobRunner> logger,
     IServiceProvider serviceProvider,
     Metrics metrics,
-    SlotsTracker slotTracker)
+    SlotsTracker slotTracker,
+    JobCancellationTokenSourceRegistry cancellationTokenSourceRegistry)
 {
     private readonly ActivitySource _activitySource = new(TracingConstants.TraceSourceName);
 
@@ -24,10 +26,12 @@ internal sealed class JobRunner(
         using var activity = _activitySource
             .StartActivity(activityName, ActivityKind.Internal, jobItem.ActivityContext ?? new ActivityContext());
         activity?.AddTag(nameof(jobItem.JobId), jobItem.JobId);
-        var jobTimeoutCancellationToken = GetJobCancellationToken(jobItem.Timeout);
-        var combinedCancellationToken = CancellationTokenSource
-            .CreateLinkedTokenSource(stoppingToken, jobTimeoutCancellationToken)
-            .Token;
+        using var jobTimeoutCancellationTokenSource = GetJobCancellationTokenSource(jobItem.Timeout);
+        using var combinedCancellationTokenSource = CancellationTokenSource
+            .CreateLinkedTokenSource(
+                stoppingToken,
+                jobTimeoutCancellationTokenSource.Token,
+                jobItem.CancellationTokenSource.Token);
         var stopwatch = Stopwatch.StartNew();
         var context = new JobContext(
             JobId: jobItem.JobId,
@@ -36,17 +40,22 @@ internal sealed class JobRunner(
         try
         {
             logger.LogDebug("Starting job {JobId}", jobItem.JobId);
-            await jobItem.Job(scope.ServiceProvider, context, combinedCancellationToken);
+            jobItem.CancellationTokenSource.Token.ThrowIfCancellationRequested();
+            await jobItem.Job(scope.ServiceProvider, context, combinedCancellationTokenSource.Token);
             metrics.TotalSuccessfulJobsCounter.Add(1);
         }
-        catch (TaskCanceledException) when (stoppingToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
             logger.LogDebug("Job {JobId} was cancelled due to graceful shutdown", jobItem.JobId);
             throw;
         }
-        catch (TaskCanceledException) when (jobTimeoutCancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (jobTimeoutCancellationTokenSource.IsCancellationRequested)
         {
-            await HandleCancellation(context, scope.ServiceProvider, stoppingToken);
+            await HandleTimeoutCancellation(context, scope.ServiceProvider, stoppingToken);
+        }
+        catch (OperationCanceledException) when (jobItem.CancellationTokenSource.IsCancellationRequested)
+        {
+            await HandleManualCancellation(context, scope.ServiceProvider, stoppingToken);
         }
         catch (Exception ex)
         {
@@ -59,6 +68,7 @@ internal sealed class JobRunner(
                 jobItem.JobId,
                 stopwatch.ElapsedMilliseconds);
             await slotTracker.ReleaseSlot();
+            cancellationTokenSourceRegistry.Unregister(jobItem.JobId);
             metrics.ActiveJobsCounter.Add(-1);
             metrics.TotalProcessedJobsCounter.Add(1);
             metrics.JobProcessingDurationHistogram.Record(stopwatch.ElapsedMilliseconds);
@@ -86,7 +96,7 @@ internal sealed class JobRunner(
         }
     }
 
-    private async Task HandleCancellation(
+    private async Task HandleTimeoutCancellation(
         JobContext context, IServiceProvider scopedServiceProvider, CancellationToken stoppingToken)
     {
         logger.LogDebug("Job {JobId} was cancelled due to timeout", context.JobId);
@@ -107,12 +117,33 @@ internal sealed class JobRunner(
         }
     }
 
-    private CancellationToken GetJobCancellationToken(TimeSpan? timeout)
+    private async Task HandleManualCancellation(
+        JobContext context, IServiceProvider scopedServiceProvider, CancellationToken stoppingToken)
+    {
+        logger.LogDebug("Job {JobId} was manually cancelled", context.JobId);
+        metrics.TotalManuallyCancelledJobsCounter.Add(1);
+        var manualCancellationHandler = scopedServiceProvider.GetService<IManualCancellationHandler>();
+        if (manualCancellationHandler is not null)
+        {
+            try
+            {
+                await manualCancellationHandler.Handle(context, stoppingToken);
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e,
+                    "An error occurred while handling manual cancellation for job {JobId} using {ManualCancellationHandler}",
+                    context.JobId, manualCancellationHandler.GetType().Name);
+            }
+        }
+    }
+
+    private CancellationTokenSource GetJobCancellationTokenSource(TimeSpan? timeout)
     {
         var jobTimeout = timeout ?? options.Value.JobTimeout;
         return jobTimeout is not null
-            ? new CancellationTokenSource(jobTimeout.Value).Token
-            : CancellationToken.None;
+            ? new CancellationTokenSource(jobTimeout.Value)
+            : new CancellationTokenSource();
     }
 
     private static string BuildActivityName(Guid jobId)

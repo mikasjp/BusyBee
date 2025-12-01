@@ -9,11 +9,11 @@ using Shouldly;
 
 namespace BusyBee.Tests.Processing;
 
-public sealed class JobCancellationTest
+public sealed class JobTimeoutTest
 {
     [Test]
     [CancelAfter(1000)]
-    public async Task JobCancellation_ShouldTriggerCancellationHandler()
+    public async Task JobTimeout_ShouldTriggerTimeoutHandler(CancellationToken cancellationToken)
     {
         // Arrange
         var bag = new ConcurrentBag<object>();
@@ -25,15 +25,15 @@ public sealed class JobCancellationTest
             .WithGlobalJobTimeout(TimeSpan.FromMilliseconds(1))
             .WithJobTimeoutHandler<JobTimeoutHandler>();
         using var host = builder.Build();
-        await host.StartAsync();
+        await host.StartAsync(cancellationToken);
         await using var scope = host.Services.CreateAsyncScope();
         var queue = scope.ServiceProvider.GetRequiredService<IBackgroundQueue>();
         
         // Act
-        await queue.Enqueue(Job, CancellationToken.None);
+        await queue.Enqueue(Job, cancellationToken);
         while (bag.IsEmpty)
         {
-            await Task.Delay(1);
+            await Task.Delay(1, cancellationToken);
         }
         
         // Assert
@@ -43,7 +43,6 @@ public sealed class JobCancellationTest
     private static async Task Job(IServiceProvider serviceProvider, JobContext jobContext, CancellationToken ct)
     {
         await Task.Delay(TimeSpan.FromHours(24), ct);
-        ct.ThrowIfCancellationRequested();
     }
 
     private class JobTimeoutHandler(ConcurrentBag<object> bag) : IJobTimeoutHandler

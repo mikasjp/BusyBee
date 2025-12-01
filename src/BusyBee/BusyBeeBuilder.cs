@@ -70,6 +70,17 @@ public sealed class BusyBeeBuilder
         return this;
     }
 
+    public BusyBeeBuilder WithManualCancellationHandler<TManualCancellationHandler>(
+        ServiceLifetime handlerLifetime = ServiceLifetime.Transient)
+        where TManualCancellationHandler : IManualCancellationHandler
+    {
+        Services.Replace(
+            ServiceDescriptor.Describe(typeof(IManualCancellationHandler), typeof(TManualCancellationHandler),
+                handlerLifetime));
+
+        return this;
+    }
+
     public BusyBeeBuilder WithLevelOfParallelism(int levelOfParallelism)
     {
         if (levelOfParallelism <= 0)

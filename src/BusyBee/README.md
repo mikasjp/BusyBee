@@ -40,6 +40,7 @@ dotnet add package BusyBee
 * Full dependency injection support
 * Comprehensive cancellation token support
 * Rich job context information
+* Manual job cancellation support
 
 
 ## Links

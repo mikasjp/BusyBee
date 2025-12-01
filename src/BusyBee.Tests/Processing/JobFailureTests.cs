@@ -13,7 +13,7 @@ public sealed class JobFailureTests
 {
     [Test]
     [CancelAfter(1000)]
-    public async Task JobFailure_ShouldTriggerFailureHandler()
+    public async Task JobFailure_ShouldTriggerFailureHandler(CancellationToken cancellationToken)
     {
         // Arrange
         var bag = new ConcurrentBag<object>();
@@ -25,15 +25,15 @@ public sealed class JobFailureTests
             .WithGlobalJobTimeout(TimeSpan.FromMilliseconds(1))
             .WithJobFailureHandler<JobFailureHandler>();
         using var host = builder.Build();
-        await host.StartAsync();
+        await host.StartAsync(cancellationToken);
         await using var scope = host.Services.CreateAsyncScope();
         var queue = scope.ServiceProvider.GetRequiredService<IBackgroundQueue>();
         
         // Act
-        await queue.Enqueue(Job, CancellationToken.None);
+        await queue.Enqueue(Job, cancellationToken);
         while (bag.IsEmpty)
         {
-            await Task.Delay(1);
+            await Task.Delay(1, cancellationToken);
         }
         
         // Assert
@@ -42,14 +42,14 @@ public sealed class JobFailureTests
     
     private static Task Job(IServiceProvider serviceProvider, JobContext jobContext, CancellationToken ct)
     {
-        throw new NotImplementedException(message: "TEST");
+        throw new MyCustomTestException();
     }
 
     private class JobFailureHandler(ConcurrentBag<object> bag) : IJobFailureHandler
     {
         public Task Handle(JobContext jobContext, Exception exception, CancellationToken cancellationToken)
         {
-            if (exception is NotImplementedException { Message: "TEST" })
+            if (exception is MyCustomTestException)
             {
                 bag.Add(new object());
             }
@@ -57,4 +57,6 @@ public sealed class JobFailureTests
             return Task.CompletedTask;
         }
     }
+
+    private class MyCustomTestException : Exception;
 }

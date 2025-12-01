@@ -1,3 +1,4 @@
+using BusyBee.JobCancellation;
 using BusyBee.Observability;
 using BusyBee.Processor;
 using BusyBee.Queue;
@@ -29,6 +30,9 @@ public static class BusyBeeModule
         services.TryAddSingleton<SlotsTracker>();
         services.TryAddSingleton<JobRunner>();
         services.TryAddSingleton<Metrics>();
+        services.TryAddSingleton<JobCancellationTokenSourceRegistry>();
+        services.TryAddSingleton<IJobCancellationService>(sp =>
+            sp.GetRequiredService<JobCancellationTokenSourceRegistry>());
 
         return new BusyBeeBuilder(services);
     }

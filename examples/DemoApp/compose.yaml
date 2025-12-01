@@ -2,8 +2,8 @@
   
   demo.busybee:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../..
+      dockerfile: examples/DemoApp/Dockerfile
     ports:
       - "127.0.0.1:8100:8080"
     depends_on:

@@ -28,6 +28,11 @@ internal sealed class Metrics(IMeterFactory meterFactory)
         .Create(MetricsConstants.MeterName)
         .CreateCounter<int>("BusyBee.processor.total_timed_out_jobs",
             description: "The total number of jobs that timed out during processing");
+    
+    public Counter<int> TotalManuallyCancelledJobsCounter { get; } = meterFactory
+        .Create(MetricsConstants.MeterName)
+        .CreateCounter<int>("BusyBee.processor.total_manually_cancelled_jobs",
+            description: "The total number of jobs that were manually cancelled");
 
     public Histogram<long> JobProcessingDurationHistogram { get; } = meterFactory
         .Create(MetricsConstants.MeterName)
